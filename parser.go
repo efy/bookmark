@@ -1,32 +1,77 @@
 package bookmark
 
 import (
-	"errors"
+	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func ParseRow(r string) (Bookmark, error) {
+var (
+	ErrBookmarkEmpty = fmt.Errorf("bookmark empty")
+)
+
+func ParseLine(r string) (Bookmark, error) {
 	var bm Bookmark
 
 	tr := regexp.MustCompile(`(?i)<a.*>(.*?)<\/a>`)
 	ur := regexp.MustCompile(`(?i)href="(.*?)"`)
 	tsr := regexp.MustCompile(`(?i)add_date="(.*?)"`)
 
-	title := tr.FindStringSubmatch(r)[1]
-	url := ur.FindStringSubmatch(r)[1]
-	ts := tsr.FindStringSubmatch(r)[1]
-
-	tsi, err := strconv.ParseInt(ts, 10, 64)
-
-	if err != nil {
-		return bm, errors.New("Could not parse timestamp to integer")
+	titlematch := tr.FindStringSubmatch(r)
+	if len(titlematch) > 1 {
+		bm.Title = titlematch[1]
 	}
 
-	created := time.Unix(tsi, 0)
+	urlmatch := ur.FindStringSubmatch(r)
+	if len(urlmatch) > 1 {
+		bm.Url = urlmatch[1]
+	}
 
-	bm = Bookmark{title, url, created}
+	ts := tsr.FindStringSubmatch(r)
+	if len(ts) > 1 {
+		tsi, err := strconv.ParseInt(ts[1], 10, 64)
+		if err == nil {
+			bm.Created = time.Unix(tsi, 0)
+		}
+	}
+
+	if (Bookmark{}) == bm {
+		return bm, ErrBookmarkEmpty
+	}
 
 	return bm, nil
+}
+
+func ParseLines(str string) ([]Bookmark, error) {
+	lines := strings.Split(sanatize(str), "\n")
+	var bms []Bookmark
+
+	for _, line := range lines {
+		// Skip empty newlines
+		if line == "" {
+			continue
+		}
+		bm, err := ParseLine(line)
+		if err != nil {
+			continue
+		}
+		bms = append(bms, bm)
+	}
+
+	return bms, nil
+}
+
+// Normalizes the bookmark file contents
+func sanatize(str string) string {
+	// Trim spaces and and newlines from beginning and end
+	s := strings.Trim(str, " \n\t")
+
+	// Remove carriage returns
+	s = strings.Replace(s, "\r", "", -1)
+
+	// Replace tabs with a space
+	s = strings.Replace(s, "\t", " ", -1)
+	return s
 }
