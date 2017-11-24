@@ -1,6 +1,7 @@
 package bookmark
 
 import (
+	"os"
 	"testing"
 )
 
@@ -57,5 +58,41 @@ func TestParseLines(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	tt := []struct {
+		file  string
+		count int
+	}{
+		{
+			"testfiles/chromium_flat.htm",
+			9,
+		},
+		{
+			"testfiles/firefox_flat.htm",
+			24,
+		},
+		{
+			"testfiles/internet_explorer_11_flat.htm",
+			18,
+		},
+		{
+			"testfiles/netscape_basic.htm",
+			2,
+		},
+		{
+			"testfiles/netscape_nested.htm",
+			8,
+		},
+	}
 
+	for _, tr := range tt {
+		file, err := os.Open(tr.file)
+		if err != nil {
+			t.Error(err)
+		}
+
+		got, err := Parse(file)
+		if len(got) != tr.count {
+			t.Error("expected", tr.count, "got", len(got))
+		}
+	}
 }

@@ -2,6 +2,8 @@ package bookmark
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -37,11 +39,20 @@ func ParseLine(r string) (Bookmark, error) {
 		}
 	}
 
-	if (Bookmark{}) == bm {
+	if (Bookmark{}) == bm || bm.Url == "" {
 		return bm, ErrBookmarkEmpty
 	}
 
 	return bm, nil
+}
+
+func Parse(r io.Reader) ([]Bookmark, error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return []Bookmark{}, err
+	}
+
+	return ParseLines(string(b))
 }
 
 func ParseLines(str string) ([]Bookmark, error) {
