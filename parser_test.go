@@ -84,3 +84,14 @@ func TestParse(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkParse(b *testing.B) {
+	file, err := os.Open("testfiles/chromium_flat.htm")
+	defer file.Close()
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < b.N; i++ {
+		_, _ = Parse(file)
+	}
+}
