@@ -14,6 +14,13 @@ var (
 	ErrBookmarkEmpty = fmt.Errorf("bookmark empty")
 )
 
+type Bookmark struct {
+	Title   string
+	Url     string
+	Created time.Time
+	Icon    string
+}
+
 func parseLine(r string) (Bookmark, error) {
 	var bm Bookmark
 
