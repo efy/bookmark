@@ -1,5 +1,5 @@
 
-Bookmarks provides a function Parse that is capable of parsing exported bookmarks
+Package bookmark provides a function Parse that is capable of parsing exported bookmarks
 from a variety of web browsers and bookmaring services. Uses the same approach as
 the PHP [netscape-bookmark-parser](https://github.com/kafene/netscape-bookmark-parser)
 
@@ -33,7 +33,6 @@ func main() {
 Bookmark{
   Title string
   Url   string
-  Icon  string
 }
 
 ```
