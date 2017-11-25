@@ -27,7 +27,7 @@ func TestParseLine(t *testing.T) {
 	}
 
 	for _, tr := range tests {
-		bm, err := ParseLine(tr.in)
+		bm, err := parseLine(tr.in)
 
 		if err != tr.err {
 			t.Error(err)
@@ -38,22 +38,6 @@ func TestParseLine(t *testing.T) {
 		if bm.Url != tr.out.Url {
 			t.Error("expected", tr.out.Url, "got", bm.Url)
 		}
-	}
-}
-
-func TestParseLines(t *testing.T) {
-	lines := `
-			<DT><A HREF="https://regexcrossword.com/" ADD_DATE="1466009413">Regex Crossword</A>
-			<DT><A HREF="https://regexcrossword.com/" ADD_DATE="1466009412">Regex Crossword</A>
-			<DT><A HREF="https://regexcrossword.com/" ADD_DATE="1466009412">Regex Crossword</A>
-  `
-
-	got, err := ParseLines(lines)
-	if err != nil {
-		t.Error(err)
-	}
-	if len(got) != 3 {
-		t.Error("expected 3 bookmarks got", len(got))
 	}
 }
 
@@ -81,6 +65,10 @@ func TestParse(t *testing.T) {
 		{
 			"testfiles/netscape_nested.htm",
 			8,
+		},
+		{
+			"testfiles/shaarli.htm",
+			6,
 		},
 	}
 

@@ -14,7 +14,7 @@ var (
 	ErrBookmarkEmpty = fmt.Errorf("bookmark empty")
 )
 
-func ParseLine(r string) (Bookmark, error) {
+func parseLine(r string) (Bookmark, error) {
 	var bm Bookmark
 
 	tr := regexp.MustCompile(`(?i)<a.*>(.*?)<\/a>`)
@@ -52,19 +52,19 @@ func Parse(r io.Reader) ([]Bookmark, error) {
 		return []Bookmark{}, err
 	}
 
-	return ParseLines(string(b))
+	return parseLines(string(b))
 }
 
-func ParseLines(str string) ([]Bookmark, error) {
+func parseLines(str string) ([]Bookmark, error) {
 	lines := strings.Split(sanatize(str), "\n")
 	var bms []Bookmark
 
 	for _, line := range lines {
-		// Skip empty newlines
+		// Skip empty
 		if line == "" {
 			continue
 		}
-		bm, err := ParseLine(line)
+		bm, err := parseLine(line)
 		if err != nil {
 			continue
 		}
