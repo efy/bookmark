@@ -1,6 +1,7 @@
 package bookmark
 
 import (
+	"fmt"
 	"os"
 	"testing"
 )
@@ -87,6 +88,20 @@ func TestParse(t *testing.T) {
 			t.Error("expected", tr.count, "got", len(got))
 		}
 	}
+}
+
+func TestParsePropgatesReaderError(t *testing.T) {
+	br := badReader{}
+	_, err := Parse(br)
+	if err.Error() != "reader error" {
+		t.Errorf("expected %q to be propogated", "reader error")
+	}
+}
+
+type badReader struct{}
+
+func (b badReader) Read(p []byte) (int, error) {
+	return 0, fmt.Errorf("reader error")
 }
 
 func BenchmarkParse(b *testing.B) {
