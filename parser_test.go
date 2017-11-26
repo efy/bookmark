@@ -34,10 +34,11 @@ func TestParseLine(t *testing.T) {
 			ErrBookmarkEmpty,
 		},
 		{
-			`<DT><A HREF="https://goodbookmark.com/" ADD_DATE="1466009412">Good Bookmark</A>`,
+			`<DT><A HREF="https://goodbookmark.com/" ADD_DATE="1466009412" ICON="testiconstring">Good Bookmark</A>`,
 			Bookmark{
 				Title: "Good Bookmark",
 				Url:   "https://goodbookmark.com/",
+				Icon:  "testiconstring",
 			},
 			nil,
 		},
@@ -54,6 +55,9 @@ func TestParseLine(t *testing.T) {
 		}
 		if bm.Url != tr.out.Url {
 			t.Error("expected", tr.out.Url, "got", bm.Url)
+		}
+		if bm.Icon != tr.out.Icon {
+			t.Error("expected", tr.out.Icon, "got", bm.Icon)
 		}
 	}
 }

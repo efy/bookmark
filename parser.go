@@ -27,6 +27,7 @@ func parseLine(r string) (Bookmark, error) {
 	tr := regexp.MustCompile(`(?i)<a.*>(.*?)<\/a>`)
 	ur := regexp.MustCompile(`(?i)href="(.*?)"`)
 	tsr := regexp.MustCompile(`(?i)add_date="(.*?)"`)
+	ir := regexp.MustCompile(`(?i)icon="(.*?)"`)
 
 	titlematch := tr.FindStringSubmatch(r)
 	if len(titlematch) > 1 {
@@ -44,6 +45,11 @@ func parseLine(r string) (Bookmark, error) {
 		if err == nil {
 			bm.Created = time.Unix(tsi, 0)
 		}
+	}
+
+	iconmatch := ir.FindStringSubmatch(r)
+	if len(iconmatch) > 1 {
+		bm.Icon = iconmatch[1]
 	}
 
 	if (Bookmark{}) == bm || bm.Url == "" {
