@@ -104,6 +104,50 @@ func (b badReader) Read(p []byte) (int, error) {
 	return 0, fmt.Errorf("reader error")
 }
 
+func TestChromium(t *testing.T) {
+	tt := []struct {
+		index    int
+		bookmark Bookmark
+	}{
+		{
+			0,
+			Bookmark{
+				Url: "http://www.jabber.org/",
+			},
+		},
+		{
+			6,
+			Bookmark{
+				Url: "https://checkio.org/",
+			},
+		},
+		{
+			16,
+			Bookmark{
+				Url: "https://github.com/shaarli/Shaarli",
+			},
+		},
+	}
+
+	file, err := os.Open("testfiles/chromium_nested.htm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	got, err := Parse(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tr := range tt {
+		if got[tr.index].Url != tr.bookmark.Url {
+			t.Error("expected", tr.bookmark.Url)
+			t.Error("got     ", got[tr.index].Url)
+		}
+	}
+}
+
 func BenchmarkParse(b *testing.B) {
 	file, err := os.Open("testfiles/chromium_flat.htm")
 	defer file.Close()
