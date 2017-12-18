@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ type Bookmark struct {
 	Url     string
 	Created time.Time
 	Icon    string
+	Tags    []string
 }
 
 func parseLine(r string) (Bookmark, error) {
@@ -28,6 +30,7 @@ func parseLine(r string) (Bookmark, error) {
 	ur := regexp.MustCompile(`(?i)href="(.*?)"`)
 	tsr := regexp.MustCompile(`(?i)add_date="(.*?)"`)
 	ir := regexp.MustCompile(`(?i)icon="(.*?)"`)
+	tagr := regexp.MustCompile(`(?i)tags="(.*?)"`)
 
 	titlematch := tr.FindStringSubmatch(r)
 	if len(titlematch) > 1 {
@@ -52,7 +55,19 @@ func parseLine(r string) (Bookmark, error) {
 		bm.Icon = iconmatch[1]
 	}
 
-	if (Bookmark{}) == bm || bm.Url == "" {
+	tagsmatch := tagr.FindStringSubmatch(r)
+	if len(tagsmatch) > 1 {
+		tags := strings.Split(tagsmatch[1], ",")
+		if len(tags) >= 1 && tagsmatch[1] != "" {
+			for i, tag := range tags {
+				tags[i] = strings.TrimSpace(tag)
+			}
+			fmt.Println(tags)
+			bm.Tags = tags
+		}
+	}
+
+	if reflect.DeepEqual(Bookmark{}, bm) || bm.Url == "" {
 		return bm, ErrBookmarkEmpty
 	}
 
