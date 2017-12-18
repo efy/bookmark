@@ -31,8 +31,11 @@ func main() {
 // Bookmark type
 
 Bookmark{
-  Title string
-  Url   string
+  Title   string
+  Url     string
+  Icon    string
+  Created time.Time
+  Tags    []string
 }
 
 ```
