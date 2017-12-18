@@ -12,7 +12,10 @@ import (
 )
 
 var (
-	ErrBookmarkEmpty = fmt.Errorf("bookmark empty")
+	ErrBookmarkEmpty    = fmt.Errorf("bookmark empty")
+	DefaultParseOptions = ParseOptions{
+		FoldersAsTags: false,
+	}
 )
 
 type Bookmark struct {
@@ -23,7 +26,18 @@ type Bookmark struct {
 	Tags    []string
 }
 
-func parseLine(r string) (Bookmark, error) {
+type ParseOptions struct {
+	// Converts the folder hierarchy into tags
+	// e.g.
+	// - Folder1
+	// -- Folder2
+	// --- Bookmark Tags[Tag1, Tag2]
+	//
+	// Will return a bookmark with tags Tag1, Tag2, Folder1, Folder2
+	FoldersAsTags bool
+}
+
+func parseBookmark(r string) (Bookmark, error) {
 	var bm Bookmark
 
 	tr := regexp.MustCompile(`(?i)<a.*>(.*?)<\/a>`)
@@ -62,7 +76,6 @@ func parseLine(r string) (Bookmark, error) {
 			for i, tag := range tags {
 				tags[i] = strings.TrimSpace(tag)
 			}
-			fmt.Println(tags)
 			bm.Tags = tags
 		}
 	}
@@ -74,29 +87,61 @@ func parseLine(r string) (Bookmark, error) {
 	return bm, nil
 }
 
+func ParseWithOptions(r io.Reader, opts ParseOptions) ([]Bookmark, error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return []Bookmark{}, err
+	}
+
+	return parseLines(string(b), opts)
+}
+
 func Parse(r io.Reader) ([]Bookmark, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return []Bookmark{}, err
 	}
 
-	return parseLines(string(b))
+	return parseLines(string(b), DefaultParseOptions)
 }
 
-func parseLines(str string) ([]Bookmark, error) {
+func parseLines(str string, opts ParseOptions) ([]Bookmark, error) {
 	lines := strings.Split(sanatize(str), "\n")
 	var bms []Bookmark
+	var folders []string
+
+	isFolder := regexp.MustCompile(`(?i)<h\d.*>(.*)<\/h\d>`)
+	isFolderClose := regexp.MustCompile(`(?i)^<\/dl>`)
+	isLink := regexp.MustCompile(`(?i)<a`)
 
 	for _, line := range lines {
 		// Skip empty
 		if line == "" {
 			continue
 		}
-		bm, err := parseLine(line)
-		if err != nil {
-			continue
+
+		if isFolder.MatchString(line) {
+			match := isFolder.FindStringSubmatch(line)
+			if len(match) >= 1 {
+				folders = append(folders, match[1])
+			}
 		}
-		bms = append(bms, bm)
+
+		if isFolderClose.MatchString(line) {
+			folders = folders[0 : len(folders)-1]
+		}
+
+		// Parse bookmark
+		if isLink.MatchString(line) {
+			bm, err := parseBookmark(line)
+			if err != nil {
+				continue
+			}
+			if opts.FoldersAsTags {
+				bm.Tags = append(bm.Tags, folders...)
+			}
+			bms = append(bms, bm)
+		}
 	}
 
 	return bms, nil

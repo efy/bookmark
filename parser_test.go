@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestParseLine(t *testing.T) {
+func TestParseBookmark(t *testing.T) {
 	var tests = []struct {
 		in  string
 		out Bookmark
@@ -30,7 +30,7 @@ func TestParseLine(t *testing.T) {
 	}
 
 	for _, tr := range tests {
-		bm, err := parseLine(tr.in)
+		bm, err := parseBookmark(tr.in)
 
 		if err != tr.err {
 			t.Error(err)
@@ -91,7 +91,7 @@ func TestParseLineWithTags(t *testing.T) {
 	}
 
 	for _, tr := range tt {
-		bm, err := parseLine(tr.in)
+		bm, err := parseBookmark(tr.in)
 
 		if err != tr.err {
 			t.Error(err)
@@ -165,6 +165,61 @@ func (b badReader) Read(p []byte) (int, error) {
 	return 0, fmt.Errorf("reader error")
 }
 
+func TestFilesWithFoldersAsTagsOption(t *testing.T) {
+	tt := map[string][]struct {
+		index    int
+		bookmark Bookmark
+	}{
+		"testfiles/chromium_nested.htm": {
+			{
+				4,
+				Bookmark{
+					Url: "http://www.php-fig.org/psr/",
+					Tags: []string{
+						"Bookmarks",
+						"Personal toolbar",
+						"Dev",
+						"PHP",
+					},
+				},
+			},
+		},
+	}
+
+	for k, v := range tt {
+		t.Run(k, func(t *testing.T) {
+			file, err := os.Open(k)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer file.Close()
+
+			got, err := ParseWithOptions(file, ParseOptions{
+				FoldersAsTags: true,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for _, tr := range v {
+				if tr.bookmark.Url != "" {
+					if got[tr.index].Url != tr.bookmark.Url {
+						t.Error("expected", tr.bookmark.Url)
+						t.Error("got     ", got[tr.index].Url)
+					}
+				}
+
+				if len(tr.bookmark.Tags) > 0 {
+					if !reflect.DeepEqual(got[tr.index].Tags, tr.bookmark.Tags) {
+						t.Error("expected", tr.bookmark.Tags)
+						t.Error("got     ", got[tr.index].Tags)
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestFiles(t *testing.T) {
 	tt := map[string][]struct {
 		index    int
@@ -227,6 +282,10 @@ func TestFiles(t *testing.T) {
 				4,
 				Bookmark{
 					Url: "https://github.com/shaarli/Shaarli/wiki",
+					Tags: []string{
+						"opensource",
+						"software",
+					},
 				},
 			},
 		},
@@ -246,9 +305,18 @@ func TestFiles(t *testing.T) {
 			}
 
 			for _, tr := range v {
-				if got[tr.index].Url != tr.bookmark.Url {
-					t.Error("expected", tr.bookmark.Url)
-					t.Error("got     ", got[tr.index].Url)
+				if tr.bookmark.Url != "" {
+					if got[tr.index].Url != tr.bookmark.Url {
+						t.Error("expected", tr.bookmark.Url)
+						t.Error("got     ", got[tr.index].Url)
+					}
+				}
+
+				if len(tr.bookmark.Tags) > 0 {
+					if !reflect.DeepEqual(got[tr.index].Tags, tr.bookmark.Tags) {
+						t.Error("expected", tr.bookmark.Tags)
+						t.Error("got     ", got[tr.index].Tags)
+					}
 				}
 			}
 		})
