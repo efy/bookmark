@@ -111,7 +111,7 @@ func parseLines(str string, opts ParseOptions) ([]Bookmark, error) {
 	var folders []string
 
 	isFolder := regexp.MustCompile(`(?i)<h\d.*>(.*)<\/h\d>`)
-	isFolderClose := regexp.MustCompile(`(?i)^<\/dl>`)
+	isFolderClose := regexp.MustCompile(`(?i)<\/dl>`)
 	isLink := regexp.MustCompile(`(?i)<a`)
 
 	for _, line := range lines {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -163,6 +164,55 @@ type badReader struct{}
 
 func (b badReader) Read(p []byte) (int, error) {
 	return 0, fmt.Errorf("reader error")
+}
+
+func TestFoldersAsTagsOption(t *testing.T) {
+	file := `
+		<DT><H3>One</H3>
+		<DL>
+			<DT><A HREF="http://bookmark1.com">Bookmark1</A>
+			<DT><H3>Two</H3>
+			<DL>
+				<DT><A HREF="http://bookmark2.com">Bookmark2</A>
+			</DL>
+			<DT><H3>Three</H3>
+			<DL>
+				<DT><A HREF="http://bookmark3.com">Bookmark3</A>
+			</DL>
+			<DT><H3>Four</H3>
+			<DL>
+				<DT><A HREF="http://bookmark4.com">Bookmark4</A>
+			</DL>
+		</DL>
+	`
+
+	got, err := ParseWithOptions(strings.NewReader(file), ParseOptions{
+		FoldersAsTags: true,
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(got[0].Tags) != 1 {
+		t.Error("expected", 1)
+		t.Error("got     ", len(got[0].Tags))
+	}
+
+	if len(got[1].Tags) != 2 {
+		t.Error("expected", 2)
+		t.Error("got     ", len(got[1].Tags))
+	}
+
+	if len(got[2].Tags) != 2 {
+		t.Error("expected", 2)
+		t.Error("got     ", len(got[2].Tags))
+	}
+
+	if len(got[3].Tags) != 2 {
+		t.Error("expected", 2)
+		t.Error("got     ", len(got[3].Tags))
+	}
 }
 
 func TestFilesWithFoldersAsTagsOption(t *testing.T) {
