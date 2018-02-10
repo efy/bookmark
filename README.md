@@ -1,4 +1,6 @@
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/efy/bookmark)](https://goreportcard.com/report/github.com/efy/bookmark)
+
 Package bookmark provides a function Parse that is capable of parsing exported bookmarks
 from a variety of web browsers and bookmaring services. Uses the same approach as
 the PHP [netscape-bookmark-parser](https://github.com/kafene/netscape-bookmark-parser)
