@@ -227,7 +227,6 @@ func TestFilesWithFoldersAsTagsOption(t *testing.T) {
 					Url: "http://www.php-fig.org/psr/",
 					Tags: []string{
 						"Bookmarks",
-						"Personal toolbar",
 						"Dev",
 						"PHP",
 					},
